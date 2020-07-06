@@ -135,7 +135,7 @@ final class Guide
 			'rewrite'               => false,
 			'capabilities' => [
 				'manage_terms'      => 'do_not_allow',
-				'edit_terms'        => 'do_not_allow',
+				'edit_terms'        => 'manage_sites',
 				'delete_terms'      => 'do_not_allow',
 				'assign_terms'      => 'manage_sites'
 			]
