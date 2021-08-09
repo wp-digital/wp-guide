@@ -6,7 +6,7 @@ export default ( props ) => {
 	const { pages } = props
 
 	return (
-		( pages.length > 0 ) && <>
+		( pages && pages.length > 0 ) && <>
 			<PluginDocumentSettingPanel
 				name="wp-guide-panel"
 				title="Useful Information"
