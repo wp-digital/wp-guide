@@ -4,7 +4,7 @@ const { PluginDocumentSettingPanel } = wp.editPost
 
 export default ( props ) => {
 	const { pages } = props
-	console.log(pages)
+
 	return (
 		( pages && pages.length > 0 ) && <>
 			<PluginDocumentSettingPanel
