@@ -85,7 +85,7 @@ final class Guide
 				'all_items'             => esc_html__( 'Guides', 'innocode-wp-guide' )
 			],
 			'public'                    => false,
-			'show_ui'                   => true,
+			'show_ui'                   => is_super_admin(),
 			'show_in_menu'              => defined( 'INNOCODE_WP_MANUAL' ) ? 'edit.php?post_type=wp_manual_help_tab' : true,
 			'show_in_rest'				=> true,
 			'menu_icon'                 => 'dashicons-book',
@@ -98,7 +98,7 @@ final class Guide
 				'edit_post'          => 'manage_sites',
 				'read_post'          => 'manage_sites',
 				'delete_post'        => 'manage_sites',
-				'edit_posts'         => 'manage_sites',
+				'edit_posts'         => 'edit_posts',
 				'edit_others_posts'  => 'manage_sites',
 				'delete_posts'       => 'manage_sites',
 				'publish_posts'      => 'manage_sites',
@@ -128,16 +128,16 @@ final class Guide
 				'menu_name'         => esc_html__( 'Guide types', 'innocode-wp-guide' )
 			],
 			'public'                => false,
-			'show_ui'               => true,
+			'show_ui'               => is_super_admin(),
 			'show_in_menu'          => false,
 			'show_in_rest'			=> true,
 			'hierarchical'          => true,
 			'rewrite'               => false,
 			'capabilities' => [
 				'manage_terms'      => 'do_not_allow',
-				'edit_terms'        => 'manage_sites',
+				'edit_terms'        => 'edit_posts',
 				'delete_terms'      => 'do_not_allow',
-				'assign_terms'      => 'manage_sites'
+				'assign_terms'      => 'edit_posts'
 			]
 		] );
 	}
