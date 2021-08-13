@@ -95,14 +95,14 @@ final class Guide
 				'title', 'editor', 'revisions'
 			],
 			'capabilities' => [
-				'edit_post'          => 'manage_sites',
-				'read_post'          => 'manage_sites',
-				'delete_post'        => 'manage_sites',
+				'edit_post'          => is_multisite() ? 'manage_sites' : 'manage_options',
+				'read_post'          => is_multisite() ? 'manage_sites' : 'manage_options',
+				'delete_post'        => is_multisite() ? 'manage_sites' : 'manage_options',
 				'edit_posts'         => 'edit_posts',
-				'edit_others_posts'  => 'manage_sites',
-				'delete_posts'       => 'manage_sites',
-				'publish_posts'      => 'manage_sites',
-				'read_private_posts' => 'manage_sites'
+				'edit_others_posts'  => is_multisite() ? 'manage_sites' : 'manage_options',
+				'delete_posts'       => is_multisite() ? 'manage_sites' : 'manage_options',
+				'publish_posts'      => is_multisite() ? 'manage_sites' : 'manage_options',
+				'read_private_posts' => is_multisite() ? 'manage_sites' : 'manage_options'
 			]
 		] );
 	}
