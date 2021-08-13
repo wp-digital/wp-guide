@@ -1,4 +1,5 @@
 import GuidePanel from "./modules/panel"
+import './sass/editor.scss'
 
 const { registerPlugin } = wp.plugins
 const { useSelect } = wp.data
