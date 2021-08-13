@@ -55,7 +55,7 @@ final class Guide
 		);
 
 		$editor_css = 'build/index.css';
-		wp_register_style(
+		wp_enqueue_style(
 				'innocode-wp-guide-style',
 				plugins_url( $editor_css, WP_GUIDE_PLUGIN_PATH ),
 				[],
