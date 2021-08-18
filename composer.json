@@ -1,0 +1,16 @@
+{
+  "name": "innocode-digital/wp-guid",
+  "version": "0.1.0",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0+",
+	"require": {
+		"php": ">=7.0",
+		"composer/installers": "^1.9"
+	},
+  "description": "Display additional panel in Gutenberg editor with guide",
+	"authors": [
+		{
+			"name": "Innocode"
+		}
+	]
+}
