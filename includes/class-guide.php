@@ -167,6 +167,7 @@ final class Guide
 	{
 		return ! in_array( $post_type, [
 			'wp_block',
+			'wp_template',
 			static::POST_TYPE
 		] );
 	}
