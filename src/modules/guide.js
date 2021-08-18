@@ -1,5 +1,5 @@
-import { Guide, GuidePage } from '@wordpress/components'
-import parse from 'html-react-parser'
+import { Guide } from '@wordpress/components'
+import PageHOC from './PageHOC.js'
 
 export default ( props ) => {
 	const { pages } = props
@@ -8,10 +8,7 @@ export default ( props ) => {
 		<Guide { ...props }>
 			{ pages.length > 0 ?
 				pages.map( page => (
-					<GuidePage key={page.id}>
-						{parse(page.title.rendered)}
-						{parse(page.content.rendered)}
-					</GuidePage>
+					<PageHOC key={page.id} page={page} />
 				) )
 				: ''
 			}

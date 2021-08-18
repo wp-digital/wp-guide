@@ -1,2 +1,23 @@
-.wp-block-innocode-wp-block-manual{border:1px dotted red}
+/**
+ * The following styles get applied inside the editor only.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+.wp-guide-manual {
+  border: 1px dotted red; }
 
+.components-guide__page {
+  padding: 20px; }
+  .components-guide__page img {
+    height: auto; }
+
+.components-guide .components-modal__header .components-button:hover {
+  background: var(--wp-admin-theme-color); }
+
+@media (min-width: 600px) {
+  .components-guide {
+    width: 1000px;
+    font-size: 25px; } }
+
+
+/*# sourceMappingURL=index.css.map*/
