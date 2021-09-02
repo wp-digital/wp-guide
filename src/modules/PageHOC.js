@@ -16,7 +16,7 @@ const PageHOC = (props) => {
 	}, [props])
 
 	return <GuidePage>
-		{parse(page.title.rendered)}
+		<b>{parse(page.title.rendered)}</b>
 		{parse(page.content.rendered)}
 	</GuidePage>
 }

@@ -2158,7 +2158,7 @@ var PageHOC = function PageHOC(props) {
 
     element.scrollTop = 0;
   }, [props]);
-  return Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__["createElement"])(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__["GuidePage"], null, html_react_parser__WEBPACK_IMPORTED_MODULE_2___default()(page.title.rendered), html_react_parser__WEBPACK_IMPORTED_MODULE_2___default()(page.content.rendered));
+  return Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__["createElement"])(_wordpress_components__WEBPACK_IMPORTED_MODULE_1__["GuidePage"], null, Object(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__["createElement"])("b", null, html_react_parser__WEBPACK_IMPORTED_MODULE_2___default()(page.title.rendered)), html_react_parser__WEBPACK_IMPORTED_MODULE_2___default()(page.content.rendered));
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (PageHOC);
