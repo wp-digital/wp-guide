@@ -12,8 +12,16 @@
   &__page {
 	padding: 20px;
 
+	&, * {
+	  line-height: 1.5;
+	}
+
 	img {
 	  height: auto;
+	}
+
+	p {
+	  margin: 1em 0;
 	}
   }
 
