@@ -14,6 +14,8 @@
     height: auto; }
   .components-guide__page p {
     margin: 1em 0; }
+  .components-guide__page p, .components-guide__page li {
+    font-size: 13px; }
 
 .components-guide .components-modal__header .components-button:hover {
   background: var(--wp-admin-theme-color); }
