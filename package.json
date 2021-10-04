@@ -1,6 +1,6 @@
 {
 	"name": "wp-guide",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "Display additional panel in Gutenberg editor with guide",
 	"author": "Innocode",
 	"license": "GPL-2.0-or-later",
