@@ -18,12 +18,11 @@ const getGuidePages = () => useSelect( select => {
 	if( terms_ids.length > 0 ) {
 		let args = {
 			wp_guide_posts: terms_ids,
-			orderby: 'title',
-			order: 'asc'
+			sorted: true
 		}
 		pages = getEntityRecords( 'postType', 'wp_guide', args )
 	} else {
-		pages = [];
+		pages = []
 	}
 
 	return pages

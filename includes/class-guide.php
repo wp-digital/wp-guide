@@ -3,17 +3,20 @@
 namespace InnocodeWPGuide;
 
 use Error;
+use WP_Query;
 
 /**
  * Class Guide
  *
  * @package InnocodeWPGuide
  */
-final class Guide
+class Guide
 {
 	const POST_TYPE = 'wp_guide';
 	const TAXONOMY = 'wp_guide_posts';
 	const OPTION = 'wp_guide_post_types';
+	const SETTINGS_GROUP = 'wp_guide_sorting';
+	const PAGE = 'guide_sorting_page';
 
 	/**
 	 * Link functions with WP hooks
@@ -29,6 +32,9 @@ final class Guide
 		add_action( 'manage_' . static::POST_TYPE . '_posts_custom_column' , [ get_called_class(), 'show_admin_columns' ], 10, 2 );
 		add_action( 'add_option', [ get_called_class(), 'add_taxonomies' ], 10, 2 );
 		add_action( 'update_option', [ get_called_class(), 'manage_taxonomies' ], 10, 3 );
+		add_action( 'admin_menu', [ get_called_class(), 'add_sorting_page' ] );
+		add_action( 'admin_init', [ get_called_class(), 'register_settings' ] );
+		add_filter( 'rest_' . static::POST_TYPE . '_query', [ get_called_class(), 'filter_rest_request' ], 10, 2 );
 	}
 
 	/**
@@ -41,26 +47,48 @@ final class Guide
 
 		if ( ! file_exists( $script_asset_path ) ) {
 			throw new Error(
-					'You need to run `npm start` or `npm run build` for the "innocode/wp-guide" plugin first.'
+				'You need to run `npm start` or `npm run build` for the "innocode/wp-guide" plugin first.'
 			);
 		}
 
 		$index_js     = 'build/index.js';
 		$script_asset = require( $script_asset_path );
 		wp_enqueue_script(
-				'innocode-wp-guide-js',
-				plugins_url( $index_js, WP_GUIDE_PLUGIN_PATH ),
-				array_merge( $script_asset['dependencies'], [ 'wp-edit-post' ]),
-				$script_asset['version']
+			'innocode-wp-guide-js',
+			plugins_url( $index_js, WP_GUIDE_PLUGIN_PATH ),
+			array_merge( $script_asset['dependencies'], [ 'wp-edit-post' ]),
+			$script_asset['version']
+		);
+		wp_add_inline_script(
+			'innocode-wp-guide-js',
+			"var guideOrder = " . json_encode( get_option( static::SETTINGS_GROUP ) ) . ';',
+			'before'
 		);
 
 		$editor_css = 'build/index.css';
 		wp_enqueue_style(
-				'innocode-wp-guide-style',
-				plugins_url( $editor_css, WP_GUIDE_PLUGIN_PATH ),
-				[],
-				filemtime( "$dir/$editor_css" )
+			'innocode-wp-guide-style',
+			plugins_url( $editor_css, WP_GUIDE_PLUGIN_PATH ),
+			[],
+			filemtime( "$dir/$editor_css" )
 		);
+
+		if( get_current_screen()->base == static::POST_TYPE . '_page_' . static::PAGE ) {
+			$sorting_asset = require( "$dir/build/sorting.asset.php" );
+
+			wp_enqueue_script(
+				'wp-guide-sorting-js',
+				plugins_url( 'build/sorting.js', WP_GUIDE_PLUGIN_PATH ),
+				$sorting_asset['dependencies'],
+				$sorting_asset['version']
+			);
+			wp_enqueue_style(
+				'wp-manual-sorting-css',
+				plugins_url( 'build/sorting.css', WP_GUIDE_PLUGIN_PATH ),
+				[],
+				$sorting_asset['version']
+			);
+		}
 	}
 
 	/**
@@ -142,6 +170,9 @@ final class Guide
 		] );
 	}
 
+	/**
+	 *
+	 */
 	public static function get_post_types_with_editor()
 	{
 		if( is_super_admin() ) {
@@ -274,5 +305,136 @@ final class Guide
 				}
 			}
 		}
+	}
+
+	/**
+	 * Register setting for Tooltips sorting page
+	 */
+	public static function register_settings()
+	{
+		register_setting( static::SETTINGS_GROUP, static::SETTINGS_GROUP );
+	}
+
+	/**
+	 * Add Tooltips sorting page
+	 */
+	public static function add_sorting_page()
+	{
+		add_submenu_page(
+			'edit.php?post_type=' . static::POST_TYPE,
+			esc_html__( 'Guide sorting', 'innocode-wp-guide' ),
+			esc_html__( 'Guide sorting', 'innocode-wp-guide' ),
+			'manage_sites',
+			static::PAGE,
+			[ get_called_class(), 'render_sorting_page' ]
+		);
+	}
+
+	/**
+	 * Render Tooltips sorting page
+	 */
+	public static function render_sorting_page()
+	{
+		?><div class="wrap">
+		<h1><?= esc_html__( 'Guide sorting', 'innocode-wp-guide' ) ?></h1>
+		<p>Please use drag and drop to sort guides.</p>
+		<form method="post" action="<?= admin_url( 'options.php' ) ?>">
+			<?php
+			settings_fields( static::SETTINGS_GROUP );
+			do_settings_sections( static::SETTINGS_GROUP );
+			$order = get_option( static::SETTINGS_GROUP, [] );
+
+			if( $screens = get_terms( static::TAXONOMY, [ 'parent' => 0, 'fields' => 'id=>name' ] ) ) : ?>
+				<div class="guide_ordering">
+					<?php foreach ( $screens as $term_id => $name ) {
+						static::render_sorting_screen( $name, $term_id, $order[ $term_id ] ?? '' );
+					} ?>
+				</div>
+			<?php endif ?>
+			<?php submit_button() ?>
+		</form>
+		</div><?php
+	}
+
+	/**
+	 * @param string $screen_name
+	 * @param int    $screen_id
+	 * @param string $order
+	 */
+	public static function render_sorting_screen( string $screen_name, int $screen_id, string $order )
+	{
+		?>
+		<div class="screen"">
+			<h2><?= $screen_name ?></h2>
+			<input id="guides-order-<?= $screen_id ?>" type="hidden" name="<?= static::SETTINGS_GROUP ?>[<?= $screen_id ?>]" value="<?= $order ?>" />
+			<?php
+			$posts = get_posts( [
+				'post_type' => static::POST_TYPE,
+				'tax_query' => [
+					[
+						'taxonomy'  => static::TAXONOMY,
+						'field'     => 'term_id',
+						'terms'     => $screen_id
+					]
+				],
+				'fields'    => 'ids'
+			] );
+
+			if( $posts && is_array( $posts) ) :
+				?><ul class="sortable-guides" data-screen-id="<?= $screen_id ?>"><?php
+				$order = explode( ',', $order );
+
+				// Display guides which were already ordered
+				if( $order ) {
+					foreach ( $order as $id ) {
+						if( in_array( $id, $posts ) ) {
+							static::render_sorting_guide( $id );
+							$posts = array_diff( $posts, [ $id ] );
+						}
+					}
+				}
+
+				// Display new guides, which are not sorted
+				foreach ( $posts as $id ) {
+					static::render_sorting_guide( $id );
+				}
+
+				?></ul><?php
+			endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * @param int $id
+	 */
+	public static function render_sorting_guide( int $id )
+	{
+		?><li data-id="<?= $id ?>"><?= get_the_title( $id ) ?></li><?php
+	}
+
+	/**
+	 * @param $args
+	 * @param $request
+	 *
+	 * @return mixed
+	 */
+	public static function filter_rest_request( $args, $request )
+	{
+		if ( isset( $request->get_params()[ 'sorted' ] ) ) {
+			$term_id = $request->get_params()[ 'wp_guide_posts' ][ 0 ] ?? 0;
+			$sorted_ids = explode( ',', get_option( static::SETTINGS_GROUP, [] )[ $term_id ] ?? '' );
+			$temp_args = wp_parse_args( [
+					'post__not_in'	=> $sorted_ids,
+					'fields'		=> 'ids'
+			], $args );
+			$args[ 'post__in' ] = array_merge(
+					$sorted_ids,
+					( new WP_Query( $temp_args ) )->posts
+			);
+			$args[ 'orderby' ] = 'post__in';
+		}
+
+		return $args;
 	}
 }
