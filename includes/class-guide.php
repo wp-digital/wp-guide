@@ -364,43 +364,45 @@ class Guide
 	public static function render_sorting_screen( string $screen_name, int $screen_id, string $order )
 	{
 		?>
-		<div class="screen"">
-			<h2><?= $screen_name ?></h2>
-			<input id="guides-order-<?= $screen_id ?>" type="hidden" name="<?= static::SETTINGS_GROUP ?>[<?= $screen_id ?>]" value="<?= $order ?>" />
-			<?php
-			$posts = get_posts( [
-				'post_type' => static::POST_TYPE,
-				'tax_query' => [
-					[
-						'taxonomy'  => static::TAXONOMY,
-						'field'     => 'term_id',
-						'terms'     => $screen_id
-					]
-				],
-				'fields'    => 'ids'
-			] );
+		<div class="screen">
+			<div class="screen-inner-wrapper">
+				<h2><?= $screen_name ?></h2>
+				<input id="guides-order-<?= $screen_id ?>" type="hidden" name="<?= static::SETTINGS_GROUP ?>[<?= $screen_id ?>]" value="<?= $order ?>" />
+				<?php
+				$posts = get_posts( [
+					'post_type' => static::POST_TYPE,
+					'tax_query' => [
+						[
+							'taxonomy'  => static::TAXONOMY,
+							'field'     => 'term_id',
+							'terms'     => $screen_id
+						]
+					],
+					'fields'    => 'ids'
+				] );
 
-			if( $posts && is_array( $posts) ) :
-				?><ul class="sortable-guides" data-screen-id="<?= $screen_id ?>"><?php
-				$order = explode( ',', $order );
+				if( $posts && is_array( $posts) ) :
+					?><ul class="sortable-guides" data-screen-id="<?= $screen_id ?>"><?php
+					$order = explode( ',', $order );
 
-				// Display guides which were already ordered
-				if( $order ) {
-					foreach ( $order as $id ) {
-						if( in_array( $id, $posts ) ) {
-							static::render_sorting_guide( $id );
-							$posts = array_diff( $posts, [ $id ] );
+					// Display guides which were already ordered
+					if( $order ) {
+						foreach ( $order as $id ) {
+							if( in_array( $id, $posts ) ) {
+								static::render_sorting_guide( $id );
+								$posts = array_diff( $posts, [ $id ] );
+							}
 						}
 					}
-				}
 
-				// Display new guides, which are not sorted
-				foreach ( $posts as $id ) {
-					static::render_sorting_guide( $id );
-				}
+					// Display new guides, which are not sorted
+					foreach ( $posts as $id ) {
+						static::render_sorting_guide( $id );
+					}
 
-				?></ul><?php
-			endif; ?>
+					?></ul><?php
+				endif; ?>
+			</div>
 		</div>
 		<?php
 	}

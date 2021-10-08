@@ -7,8 +7,10 @@
 .guide_ordering .screen {
     flex-grow: 1;
     width: 25%;
-    padding: 0 20px;
+    padding: 0 20px 0 0;
     box-sizing: border-box;
-    margin: 20px 0 0;
-    background: white;
+}
+.guide_ordering .screen .screen-inner-wrapper {
+	padding: 10px 20px;
+	background: white;
 }
