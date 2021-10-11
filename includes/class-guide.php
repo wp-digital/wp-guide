@@ -324,7 +324,7 @@ class Guide
 			'edit.php?post_type=' . static::POST_TYPE,
 			esc_html__( 'Guide sorting', 'innocode-wp-guide' ),
 			esc_html__( 'Guide sorting', 'innocode-wp-guide' ),
-			'manage_sites',
+			is_multisite() ? 'manage_sites' : 'manage_options',,
 			static::PAGE,
 			[ get_called_class(), 'render_sorting_page' ]
 		);
