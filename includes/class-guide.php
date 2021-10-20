@@ -42,7 +42,7 @@ class Guide
 	 */
 	public static function admin_enqueue_scripts()
 	{
-		$dir = dirname( WP_GUIDE_PLUGIN_PATH );
+		$dir = dirname( INNOCODE_WP_GUIDE_PLUGIN_PATH );
 		$script_asset_path = "$dir/build/index.asset.php";
 
 		if ( ! file_exists( $script_asset_path ) ) {
@@ -55,7 +55,7 @@ class Guide
 		$script_asset = require( $script_asset_path );
 		wp_enqueue_script(
 			'innocode-wp-guide-js',
-			plugins_url( $index_js, WP_GUIDE_PLUGIN_PATH ),
+			plugins_url( $index_js, INNOCODE_WP_GUIDE_PLUGIN_PATH ),
 			array_merge( $script_asset['dependencies'], [ 'wp-edit-post' ]),
 			$script_asset['version']
 		);
@@ -68,7 +68,7 @@ class Guide
 		$editor_css = 'build/index.css';
 		wp_enqueue_style(
 			'innocode-wp-guide-style',
-			plugins_url( $editor_css, WP_GUIDE_PLUGIN_PATH ),
+			plugins_url( $editor_css, INNOCODE_WP_GUIDE_PLUGIN_PATH ),
 			[],
 			filemtime( "$dir/$editor_css" )
 		);
@@ -78,13 +78,13 @@ class Guide
 
 			wp_enqueue_script(
 				'wp-guide-sorting-js',
-				plugins_url( 'build/sorting.js', WP_GUIDE_PLUGIN_PATH ),
+				plugins_url( 'build/sorting.js', INNOCODE_WP_GUIDE_PLUGIN_PATH ),
 				$sorting_asset['dependencies'],
 				$sorting_asset['version']
 			);
 			wp_enqueue_style(
 				'wp-manual-sorting-css',
-				plugins_url( 'build/sorting.css', WP_GUIDE_PLUGIN_PATH ),
+				plugins_url( 'build/sorting.css', INNOCODE_WP_GUIDE_PLUGIN_PATH ),
 				[],
 				$sorting_asset['version']
 			);
@@ -114,7 +114,7 @@ class Guide
 			],
 			'public'                    => false,
 			'show_ui'                   => is_super_admin(),
-			'show_in_menu'              => defined( 'INNOCODE_WP_MANUAL' ) ? 'edit.php?post_type=wp_manual_help_tab' : true,
+			'show_in_menu'              => true,
 			'show_in_rest'				=> true,
 			'menu_icon'                 => 'dashicons-book',
 			'menu_position'             => 3,
