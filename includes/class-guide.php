@@ -370,15 +370,16 @@ class Guide
 				<input id="guides-order-<?= $screen_id ?>" type="hidden" name="<?= static::SETTINGS_GROUP ?>[<?= $screen_id ?>]" value="<?= $order ?>" />
 				<?php
 				$posts = get_posts( [
-					'post_type' => static::POST_TYPE,
-					'tax_query' => [
+					'post_type' 		=> static::POST_TYPE,
+					'posts_per_page'	=> 10,
+					'tax_query'			=> [
 						[
 							'taxonomy'  => static::TAXONOMY,
 							'field'     => 'term_id',
 							'terms'     => $screen_id
 						]
 					],
-					'fields'    => 'ids'
+					'fields'			=> 'ids'
 				] );
 
 				if( $posts && is_array( $posts) ) :
