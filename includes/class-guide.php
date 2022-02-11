@@ -15,8 +15,10 @@ class Guide
 	const POST_TYPE = 'wp_guide';
 	const TAXONOMY = 'wp_guide_posts';
 	const OPTION = 'wp_guide_post_types';
-	const SETTINGS_GROUP = 'wp_guide_sorting';
-	const PAGE = 'guide_sorting_page';
+	const SORTING_SETTINGS = 'wp_guide_sorting';
+	const GENERAL_SETTINGS = 'wp_guide_settings';
+	const SORTING_PAGE = 'guide_sorting_page';
+	const SETTINGS_PAGE = 'guide_settings_page';
 
 	/**
 	 * Link functions with WP hooks
@@ -33,8 +35,10 @@ class Guide
 		add_action( 'add_option', [ get_called_class(), 'add_taxonomies' ], 10, 2 );
 		add_action( 'update_option', [ get_called_class(), 'manage_taxonomies' ], 10, 3 );
 		add_action( 'admin_menu', [ get_called_class(), 'add_sorting_page' ] );
+		add_action( 'admin_menu', [ get_called_class(), 'add_settings_page' ] );
 		add_action( 'admin_init', [ get_called_class(), 'register_settings' ] );
 		add_filter( 'rest_' . static::POST_TYPE . '_query', [ get_called_class(), 'filter_rest_request' ], 10, 2 );
+		add_filter( 'rest_' . static::TAXONOMY . '_query', [ get_called_class(), 'filter_rest_tax_request' ], 10, 2 );
 	}
 
 	/**
@@ -61,7 +65,7 @@ class Guide
 		);
 		wp_add_inline_script(
 			'innocode-wp-guide-js',
-			"var guideOrder = " . json_encode( get_option( static::SETTINGS_GROUP ) ) . ';',
+			"var guideOrder = " . json_encode( get_option( static::SORTING_SETTINGS ) ) . ';',
 			'before'
 		);
 
@@ -73,7 +77,7 @@ class Guide
 			filemtime( "$dir/$editor_css" )
 		);
 
-		if( get_current_screen()->base == static::POST_TYPE . '_page_' . static::PAGE ) {
+		if( get_current_screen()->base == static::POST_TYPE . '_page_' . static::SORTING_PAGE ) {
 			$sorting_asset = require( "$dir/build/sorting.asset.php" );
 
 			wp_enqueue_script(
@@ -96,6 +100,15 @@ class Guide
 	 */
 	public static function register_guide_post_type()
 	{
+		$show_in_menu = true;
+
+		if( is_multisite() && ! is_main_site() ) {
+			switch_to_blog( 1 );
+			$options = get_option( static::GENERAL_SETTINGS, [] );
+			$show_in_menu = ! isset( $options[ 'from-main-site' ] ) || $options[ 'from-main-site'] != 'true';
+			restore_current_blog();
+		}
+
 		register_post_type( static::POST_TYPE, [
 			'labels'                    => [
 				'name'                  => esc_html__( 'Guides', 'innocode-wp-guide' ),
@@ -114,7 +127,7 @@ class Guide
 			],
 			'public'                    => false,
 			'show_ui'                   => is_super_admin(),
-			'show_in_menu'              => true,
+			'show_in_menu'              => $show_in_menu,
 			'show_in_rest'				=> true,
 			'menu_icon'                 => 'dashicons-book',
 			'menu_position'             => 3,
@@ -308,15 +321,16 @@ class Guide
 	}
 
 	/**
-	 * Register setting for Tooltips sorting page
+	 * Register setting for Guide sorting page
 	 */
 	public static function register_settings()
 	{
-		register_setting( static::SETTINGS_GROUP, static::SETTINGS_GROUP );
+		register_setting( static::SORTING_SETTINGS, static::SORTING_SETTINGS );
+		register_setting( static::GENERAL_SETTINGS, static::GENERAL_SETTINGS );
 	}
 
 	/**
-	 * Add Tooltips sorting page
+	 * Add Guide sorting page
 	 */
 	public static function add_sorting_page()
 	{
@@ -325,13 +339,31 @@ class Guide
 			esc_html__( 'Guide sorting', 'innocode-wp-guide' ),
 			esc_html__( 'Guide sorting', 'innocode-wp-guide' ),
 			is_multisite() ? 'manage_sites' : 'manage_options',
-			static::PAGE,
+			static::SORTING_PAGE,
 			[ get_called_class(), 'render_sorting_page' ]
 		);
 	}
 
 	/**
-	 * Render Tooltips sorting page
+	 * Add Guide settings page
+	 */
+	public static function add_settings_page()
+	{
+		if( is_main_site() ) {
+			add_submenu_page(
+				'edit.php?post_type=' . static::POST_TYPE,
+				esc_html__( 'Guide settings', 'innocode-wp-guide' ),
+				esc_html__( 'Guide settings', 'innocode-wp-guide' ),
+				'manage_sites',
+				static::SETTINGS_PAGE,
+				[ get_called_class(), 'render_settings_page' ]
+			);
+		}
+
+	}
+
+	/**
+	 * Render Guide sorting page
 	 */
 	public static function render_sorting_page()
 	{
@@ -340,9 +372,9 @@ class Guide
 		<p>Please use drag and drop to sort guides.</p>
 		<form method="post" action="<?= admin_url( 'options.php' ) ?>">
 			<?php
-			settings_fields( static::SETTINGS_GROUP );
-			do_settings_sections( static::SETTINGS_GROUP );
-			$order = get_option( static::SETTINGS_GROUP, [] );
+			settings_fields( static::SORTING_SETTINGS );
+			do_settings_sections( static::SORTING_SETTINGS );
+			$order = get_option( static::SORTING_SETTINGS, [] );
 
 			if( $screens = get_terms( static::TAXONOMY, [ 'parent' => 0, 'fields' => 'id=>name' ] ) ) : ?>
 				<div class="guide_ordering">
@@ -351,6 +383,30 @@ class Guide
 					} ?>
 				</div>
 			<?php endif ?>
+			<?php submit_button() ?>
+		</form>
+		</div><?php
+	}
+
+	/**
+	 * Render Guide settings page
+	 */
+	public static function render_settings_page()
+	{
+		?><div class="wrap">
+		<h1><?= esc_html__( 'Guide settings', 'innocode-wp-guide' ) ?></h1>
+		<form method="post" action="<?= admin_url( 'options.php' ) ?>">
+			<?php
+			settings_fields( static::GENERAL_SETTINGS );
+			do_settings_sections( static::GENERAL_SETTINGS );
+			$options = get_option( static::GENERAL_SETTINGS, [] );
+			$checked = ( isset( $options[ 'from-main-site' ] ) && $options['from-main-site'] == 'true' ? ' checked="checked"' : '');
+			?>
+			<h2 class="title"><?= esc_html__( 'Multisite settings', 'innocode-wp-guide' ) ?></h2>
+			<label for="from-main-site">
+				<input name="<?= static::GENERAL_SETTINGS ?>[from-main-site]" type="checkbox" id="from-main-site" value="true" <?= $checked ?>>
+				<?= esc_html__( 'Show guides from main site', 'innocode-wp-guide' ) ?>
+			</label>
 			<?php submit_button() ?>
 		</form>
 		</div><?php
@@ -367,7 +423,7 @@ class Guide
 		<div class="screen">
 			<div class="screen-inner-wrapper">
 				<h2><?= $screen_name ?></h2>
-				<input id="guides-order-<?= $screen_id ?>" type="hidden" name="<?= static::SETTINGS_GROUP ?>[<?= $screen_id ?>]" value="<?= $order ?>" />
+				<input id="guides-order-<?= $screen_id ?>" type="hidden" name="<?= static::SORTING_SETTINGS ?>[<?= $screen_id ?>]" value="<?= $order ?>" />
 				<?php
 				$posts = get_posts( [
 					'post_type' 		=> static::POST_TYPE,
@@ -424,9 +480,13 @@ class Guide
 	 */
 	public static function filter_rest_request( $args, $request )
 	{
+		if( isset( $request->get_params()[ 'fromMainSite' ] ) ) {
+			switch_to_blog( 1 );
+		}
+
 		if ( isset( $request->get_params()[ 'sorted' ] ) ) {
 			$term_id = $request->get_params()[ 'wp_guide_posts' ][ 0 ] ?? 0;
-			$sorted_ids = explode( ',', get_option( static::SETTINGS_GROUP, [] )[ $term_id ] ?? '' );
+			$sorted_ids = explode( ',', get_option( static::SORTING_SETTINGS, [] )[ $term_id ] ?? '' );
 			$temp_args = wp_parse_args( [
 					'post__not_in'	=> $sorted_ids,
 					'fields'		=> 'ids'
@@ -436,6 +496,21 @@ class Guide
 					( new WP_Query( $temp_args ) )->posts
 			);
 			$args[ 'orderby' ] = 'post__in';
+		}
+
+		return $args;
+	}
+
+	/**
+	 * @param $args
+	 * @param $request
+	 *
+	 * @return mixed
+	 */
+	public static function filter_rest_tax_request( $args, $request )
+	{
+		if( isset( $request->get_params()[ 'fromMainSite' ] ) ) {
+			switch_to_blog( 1 );
 		}
 
 		return $args;
