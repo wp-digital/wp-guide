@@ -12,7 +12,7 @@ const getGuidePages = () => useSelect( select => {
 
 	postType = getCurrentPostType()
 	terms = getEntityRecords( 'taxonomy', 'wp_guide_posts', {
-		fromMainSite: true
+		fromMainSite: window.fromMainSite
 	} )
 
 	terms_ids = terms ? terms.map( term => term.slug === postType ? term.id : '' ) : []
@@ -22,7 +22,7 @@ const getGuidePages = () => useSelect( select => {
 		let args = {
 			wp_guide_posts: terms_ids,
 			sorted: true,
-			fromMainSite: true
+			fromMainSite: window.fromMainSite
 		}
 		pages = getEntityRecords( 'postType', 'wp_guide', args )
 	} else {

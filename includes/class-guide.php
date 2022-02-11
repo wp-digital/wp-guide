@@ -63,9 +63,19 @@ class Guide
 			array_merge( $script_asset['dependencies'], [ 'wp-edit-post' ]),
 			$script_asset['version']
 		);
+
+		$from_main_site = false;
+
+		if( is_multisite() && ! is_main_site() ) {
+			switch_to_blog( 1 );
+			$options = get_option( static::GENERAL_SETTINGS, [] );
+			$from_main_site = isset( $options[ 'from-main-site' ] ) && $options[ 'from-main-site'] == 'true';
+			restore_current_blog();
+		}
+
 		wp_add_inline_script(
 			'innocode-wp-guide-js',
-			"var guideOrder = " . json_encode( get_option( static::SORTING_SETTINGS ) ) . ';',
+			"var fromMainSite = " . ( $from_main_site ? 'true' : 'false' ) .';',
 			'before'
 		);
 
@@ -480,7 +490,9 @@ class Guide
 	 */
 	public static function filter_rest_request( $args, $request )
 	{
-		if( isset( $request->get_params()[ 'fromMainSite' ] ) ) {
+		$params = $request->get_params();
+
+		if( isset( $params[ 'fromMainSite' ] ) && filter_var( $params[ 'fromMainSite' ], FILTER_VALIDATE_BOOLEAN) ) {
 			switch_to_blog( 1 );
 		}
 
@@ -509,7 +521,9 @@ class Guide
 	 */
 	public static function filter_rest_tax_request( $args, $request )
 	{
-		if( isset( $request->get_params()[ 'fromMainSite' ] ) ) {
+		$params = $request->get_params();
+
+		if( isset( $params[ 'fromMainSite' ] ) && filter_var( $params[ 'fromMainSite' ], FILTER_VALIDATE_BOOLEAN) ) {
 			switch_to_blog( 1 );
 		}
 
