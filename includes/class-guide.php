@@ -222,6 +222,9 @@ class Guide
 		return ! in_array( $post_type, [
 			'wp_block',
 			'wp_template',
+			'wp_navigation',
+			'wp_template_part',
+			'nav_menu_item',
 			static::POST_TYPE
 		] );
 	}
