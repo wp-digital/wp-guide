@@ -2,4 +2,4 @@
 
 ### Description
 
-Display additional panel in Gutenberg editor with guide 
+Display additional panel in Gutenberg editor with guide. 

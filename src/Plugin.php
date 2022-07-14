@@ -1,16 +1,10 @@
 <?php
 
-namespace InnocodeWPGuide;
+namespace Innocode\Guide;
 
-use Error;
 use WP_Query;
 
-/**
- * Class Guide
- *
- * @package InnocodeWPGuide
- */
-class Guide
+class Plugin
 {
 	const POST_TYPE = 'wp_guide';
 	const TAXONOMY = 'wp_guide_posts';
@@ -27,7 +21,7 @@ class Guide
 		add_action( 'init', [ get_called_class(), 'register_screen_taxonomy' ] );
 		add_action( 'init', [ get_called_class(), 'get_post_types_with_editor' ] );
 		add_action( 'admin_enqueue_scripts', [ get_called_class(), 'admin_enqueue_scripts' ] );
-		add_filter( 'wp_terms_checklist_args', [ get_called_class(), 'set_checked_ontop_default' ], 10 );
+		add_filter( 'wp_terms_checklist_args', [ get_called_class(), 'set_checked_ontop_default' ] );
 		add_filter( 'manage_' . static::POST_TYPE . '_posts_columns', [ get_called_class(), 'add_admin_column' ] );
 		add_action( 'manage_' . static::POST_TYPE . '_posts_custom_column' , [ get_called_class(), 'show_admin_columns' ], 10, 2 );
 		add_action( 'add_option', [ get_called_class(), 'add_taxonomies' ], 10, 2 );
@@ -42,50 +36,36 @@ class Guide
 	 */
 	public static function admin_enqueue_scripts()
 	{
-		$dir = dirname( INNOCODE_WP_GUIDE_PLUGIN_PATH );
+		$dir = dirname( INNOCODE_GUIDE_FILE );
 		$script_asset_path = "$dir/build/index.asset.php";
 
 		if ( ! file_exists( $script_asset_path ) ) {
-			throw new Error(
-				'You need to run `npm start` or `npm run build` for the "innocode/wp-guide" plugin first.'
-			);
+			wp_die( __( 'You need to run `npm run build` to generate the assets.', 'innocode-guide' ) );
 		}
 
-		$index_js     = 'build/index.js';
 		$script_asset = require( $script_asset_path );
+
 		wp_enqueue_script(
-			'innocode-wp-guide-js',
-			plugins_url( $index_js, INNOCODE_WP_GUIDE_PLUGIN_PATH ),
-			array_merge( $script_asset['dependencies'], [ 'wp-edit-post' ]),
+			'innocode-guide',
+			plugins_url( 'build/index.js', INNOCODE_GUIDE_FILE ),
+			$script_asset['dependencies'],
 			$script_asset['version']
 		);
-		wp_add_inline_script(
-			'innocode-wp-guide-js',
-			"var guideOrder = " . json_encode( get_option( static::SETTINGS_GROUP ) ) . ';',
-			'before'
-		);
 
-		$editor_css = 'build/index.css';
 		wp_enqueue_style(
-			'innocode-wp-guide-style',
-			plugins_url( $editor_css, INNOCODE_WP_GUIDE_PLUGIN_PATH ),
+			'innocode-guide',
+			plugins_url( 'build/index.css', INNOCODE_GUIDE_FILE ),
 			[],
-			filemtime( "$dir/$editor_css" )
+			$script_asset['version']
 		);
 
-		if( get_current_screen()->base == static::POST_TYPE . '_page_' . static::PAGE ) {
+		if ( get_current_screen()->base == static::POST_TYPE . '_page_' . static::PAGE ) {
 			$sorting_asset = require( "$dir/build/sorting.asset.php" );
 
 			wp_enqueue_script(
-				'wp-guide-sorting-js',
-				plugins_url( 'build/sorting.js', INNOCODE_WP_GUIDE_PLUGIN_PATH ),
+				'innocode-guide-sorting',
+				plugins_url( 'build/sorting.js', INNOCODE_GUIDE_FILE ),
 				$sorting_asset['dependencies'],
-				$sorting_asset['version']
-			);
-			wp_enqueue_style(
-				'wp-manual-sorting-css',
-				plugins_url( 'build/sorting.css', INNOCODE_WP_GUIDE_PLUGIN_PATH ),
-				[],
 				$sorting_asset['version']
 			);
 		}
@@ -98,19 +78,19 @@ class Guide
 	{
 		register_post_type( static::POST_TYPE, [
 			'labels'                    => [
-				'name'                  => esc_html__( 'Guides', 'innocode-wp-guide' ),
-				'singular_name'         => esc_html__( 'Guide', 'innocode-wp-guide' ),
-				'menu_name'             => esc_html__( 'Guide', 'innocode-wp-guide' ),
-				'name_admin_bar'        => esc_html__( 'Guide', 'innocode-wp-guide' ),
-				'add_new'               => esc_html__( 'Add new guide', 'innocode-wp-guide' ),
-				'add_new_item'          => esc_html__( 'Add new guide', 'innocode-wp-guide' ),
-				'edit_item'             => esc_html__( 'Edit guide', 'innocode-wp-guide' ),
-				'new_item'              => esc_html__( 'New guide', 'innocode-wp-guide' ),
-				'view_item'             => esc_html__( 'View guide', 'innocode-wp-guide' ),
-				'search_items'          => esc_html__( 'Search in guides', 'innocode-wp-guide' ),
-				'not_found'             => esc_html__( 'No guides found', 'innocode-wp-guide' ),
-				'not_found_in_trash'    => esc_html__( 'No guides found in trash', 'innocode-wp-guide' ),
-				'all_items'             => esc_html__( 'Guides', 'innocode-wp-guide' )
+				'name'                  => esc_html__( 'Guides', 'innocode-guide' ),
+				'singular_name'         => esc_html__( 'Guide', 'innocode-guide' ),
+				'menu_name'             => esc_html__( 'Guide', 'innocode-guide' ),
+				'name_admin_bar'        => esc_html__( 'Guide', 'innocode-guide' ),
+				'add_new'               => esc_html__( 'Add new guide', 'innocode-guide' ),
+				'add_new_item'          => esc_html__( 'Add new guide', 'innocode-guide' ),
+				'edit_item'             => esc_html__( 'Edit guide', 'innocode-guide' ),
+				'new_item'              => esc_html__( 'New guide', 'innocode-guide' ),
+				'view_item'             => esc_html__( 'View guide', 'innocode-guide' ),
+				'search_items'          => esc_html__( 'Search in guides', 'innocode-guide' ),
+				'not_found'             => esc_html__( 'No guides found', 'innocode-guide' ),
+				'not_found_in_trash'    => esc_html__( 'No guides found in trash', 'innocode-guide' ),
+				'all_items'             => esc_html__( 'Guides', 'innocode-guide' )
 			],
 			'public'                    => false,
 			'show_ui'                   => is_super_admin(),
@@ -142,18 +122,18 @@ class Guide
 	{
 		register_taxonomy( static::TAXONOMY, [ static::POST_TYPE ],[
 			'labels'                => [
-				'name'              => esc_html__( 'Guide types', 'innocode-wp-guide' ),
-				'singular_name'     => esc_html__( 'Guide type', 'innocode-wp-guide' ),
-				'search_items'      => esc_html__( 'Search in guide types', 'innocode-wp-guide' ),
-				'all_items'         => esc_html__( 'All guide types', 'innocode-wp-guide' ),
-				'view_item '        => esc_html__( 'View guide type', 'innocode-wp-guide' ),
-				'parent_item'       => esc_html__( 'Parent guide type', 'innocode-wp-guide' ),
-				'parent_item_colon' => esc_html__( 'Parent guide type:', 'innocode-wp-guide' ),
-				'edit_item'         => esc_html__( 'Edit guide type', 'innocode-wp-guide' ),
-				'update_item'       => esc_html__( 'Update guide type', 'innocode-wp-guide' ),
-				'add_new_item'      => esc_html__( 'Add new guide type', 'innocode-wp-guide' ),
-				'new_item_name'     => esc_html__( 'New guide type title', 'innocode-wp-guide' ),
-				'menu_name'         => esc_html__( 'Guide types', 'innocode-wp-guide' )
+				'name'              => esc_html__( 'Guide types', 'innocode-guide' ),
+				'singular_name'     => esc_html__( 'Guide type', 'innocode-guide' ),
+				'search_items'      => esc_html__( 'Search in guide types', 'innocode-guide' ),
+				'all_items'         => esc_html__( 'All guide types', 'innocode-guide' ),
+				'view_item '        => esc_html__( 'View guide type', 'innocode-guide' ),
+				'parent_item'       => esc_html__( 'Parent guide type', 'innocode-guide' ),
+				'parent_item_colon' => esc_html__( 'Parent guide type:', 'innocode-guide' ),
+				'edit_item'         => esc_html__( 'Edit guide type', 'innocode-guide' ),
+				'update_item'       => esc_html__( 'Update guide type', 'innocode-guide' ),
+				'add_new_item'      => esc_html__( 'Add new guide type', 'innocode-guide' ),
+				'new_item_name'     => esc_html__( 'New guide type title', 'innocode-guide' ),
+				'menu_name'         => esc_html__( 'Guide types', 'innocode-guide' )
 			],
 			'public'                => false,
 			'show_ui'               => is_super_admin(),
@@ -170,16 +150,13 @@ class Guide
 		] );
 	}
 
-	/**
-	 *
-	 */
 	public static function get_post_types_with_editor()
 	{
-		if( is_super_admin() ) {
+		if ( is_super_admin() ) {
 			$supported_post_types = array_filter( array_intersect(
-					array_values( get_post_types( [ 'show_in_rest'	=> 1 ] ) ),
-					array_values( get_post_types_by_support( 'editor' ) )
-			), function( $post_type ) {
+				array_values( get_post_types( [ 'show_in_rest'	=> 1 ] ) ),
+				array_values( get_post_types_by_support( 'editor' ) )
+			), function ( $post_type ) {
 				return static::is_excluded_post_type( $post_type );
 			} );
 
@@ -199,7 +176,7 @@ class Guide
 		return ! in_array( $post_type, [
 			'wp_block',
 			'wp_template',
-			static::POST_TYPE
+			static::POST_TYPE,
 		] );
 	}
 
@@ -245,7 +222,7 @@ class Guide
 	public static function add_admin_column( array $columns ): array
     {
 		$position = 2;
-		$new_column = [ static::TAXONOMY => esc_html__( 'Post types', 'innocode-wp-guide' ) ];
+		$new_column = [ static::TAXONOMY => esc_html__( 'Post types', 'innocode-guide' ) ];
 
 		return array_slice( $columns, 0, $position ) + $new_column + array_slice( $columns, $position );
 	}
@@ -322,8 +299,8 @@ class Guide
 	{
 		add_submenu_page(
 			'edit.php?post_type=' . static::POST_TYPE,
-			esc_html__( 'Guide sorting', 'innocode-wp-guide' ),
-			esc_html__( 'Guide sorting', 'innocode-wp-guide' ),
+			esc_html__( 'Guide sorting', 'innocode-guide' ),
+			esc_html__( 'Guide sorting', 'innocode-guide' ),
 			is_multisite() ? 'manage_sites' : 'manage_options',
 			static::PAGE,
 			[ get_called_class(), 'render_sorting_page' ]
@@ -336,8 +313,10 @@ class Guide
 	public static function render_sorting_page()
 	{
 		?><div class="wrap">
-		<h1><?= esc_html__( 'Guide sorting', 'innocode-wp-guide' ) ?></h1>
-		<p>Please use drag and drop to sort guides.</p>
+		<h1><?php esc_html_e( 'Guide sorting', 'innocode-guide' ) ?></h1>
+		<p>
+			<?php esc_html_e( 'Please use drag and drop to sort guides.', 'innocode-guide' ) ?>
+		</p>
 		<form method="post" action="<?= admin_url( 'options.php' ) ?>">
 			<?php
 			settings_fields( static::SETTINGS_GROUP );
@@ -345,7 +324,7 @@ class Guide
 			$order = get_option( static::SETTINGS_GROUP, [] );
 
 			if( $screens = get_terms( static::TAXONOMY, [ 'parent' => 0, 'fields' => 'id=>name' ] ) ) : ?>
-				<div class="guide_ordering">
+				<div class="innocode-guide-sorting">
 					<?php foreach ( $screens as $term_id => $name ) {
 						static::render_sorting_screen( $name, $term_id, $order[ $term_id ] ?? '' );
 					} ?>
@@ -364,46 +343,44 @@ class Guide
 	public static function render_sorting_screen( string $screen_name, int $screen_id, string $order )
 	{
 		?>
-		<div class="screen">
-			<div class="screen-inner-wrapper">
-				<h2><?= $screen_name ?></h2>
-				<input id="guides-order-<?= $screen_id ?>" type="hidden" name="<?= static::SETTINGS_GROUP ?>[<?= $screen_id ?>]" value="<?= $order ?>" />
-				<?php
-				$posts = get_posts( [
-					'post_type' 		=> static::POST_TYPE,
-					'posts_per_page'	=> 10,
-					'tax_query'			=> [
-						[
-							'taxonomy'  => static::TAXONOMY,
-							'field'     => 'term_id',
-							'terms'     => $screen_id
-						]
-					],
-					'fields'			=> 'ids'
-				] );
+		<div class="innocode-guide-sorting__screen">
+			<h2><?= $screen_name ?></h2>
+			<input id="innocode-guide-order-<?= $screen_id ?>" type="hidden" name="<?= static::SETTINGS_GROUP ?>[<?= $screen_id ?>]" value="<?= $order ?>">
+			<?php
+			$posts = get_posts( [
+				'post_type' 		=> static::POST_TYPE,
+				'posts_per_page'	=> 20,
+				'tax_query'			=> [
+					[
+						'taxonomy'  => static::TAXONOMY,
+						'field'     => 'term_id',
+						'terms'     => $screen_id
+					]
+				],
+				'fields'			=> 'ids'
+			] );
 
-				if( $posts && is_array( $posts) ) :
-					?><ul class="sortable-guides" data-screen-id="<?= $screen_id ?>"><?php
-					$order = explode( ',', $order );
+			if( $posts && is_array( $posts) ) :
+				?><ul class="innocode-guide-sorting__guides" data-screen-id="<?= $screen_id ?>"><?php
+				$order = explode( ',', $order );
 
-					// Display guides which were already ordered
-					if( $order ) {
-						foreach ( $order as $id ) {
-							if( in_array( $id, $posts ) ) {
-								static::render_sorting_guide( $id );
-								$posts = array_diff( $posts, [ $id ] );
-							}
+				// Display guides which were already ordered
+				if( $order ) {
+					foreach ( $order as $id ) {
+						if( in_array( $id, $posts ) ) {
+							static::render_sorting_guide( $id );
+							$posts = array_diff( $posts, [ $id ] );
 						}
 					}
+				}
 
-					// Display new guides, which are not sorted
-					foreach ( $posts as $id ) {
-						static::render_sorting_guide( $id );
-					}
+				// Display new guides, which are not sorted
+				foreach ( $posts as $id ) {
+					static::render_sorting_guide( $id );
+				}
 
-					?></ul><?php
-				endif; ?>
-			</div>
+				?></ul><?php
+			endif; ?>
 		</div>
 		<?php
 	}
@@ -428,8 +405,8 @@ class Guide
 			$term_id = $request->get_params()[ 'wp_guide_posts' ][ 0 ] ?? 0;
 			$sorted_ids = explode( ',', get_option( static::SETTINGS_GROUP, [] )[ $term_id ] ?? '' );
 			$temp_args = wp_parse_args( [
-					'post__not_in'	=> $sorted_ids,
-					'fields'		=> 'ids'
+				'post__not_in'	=> $sorted_ids,
+				'fields'		=> 'ids',
 			], $args );
 			$args[ 'post__in' ] = array_merge(
 					$sorted_ids,

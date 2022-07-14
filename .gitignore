@@ -13,6 +13,7 @@ build/Release
 
 # Dependency directories
 node_modules/
+vendor/
 
 # Optional npm cache directory
 .npm
@@ -26,4 +27,15 @@ node_modules/
 # dotenv environment variables file
 .env
 
+# Lock file because it's a plugin
+composer.lock
+
+# Cache
+.cache
+
+# macOS
+.DS_Store
+
+# IDE
 .idea/
+.vscode/
