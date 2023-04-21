@@ -174,8 +174,11 @@ class Plugin
 	public static function is_excluded_post_type( string $post_type ): bool
 	{
 		return ! in_array( $post_type, [
+			'nav_menu_item',
 			'wp_block',
+			'wp_navigation',
 			'wp_template',
+			'wp_template_part',
 			static::POST_TYPE,
 		] );
 	}
