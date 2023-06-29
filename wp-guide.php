@@ -2,7 +2,7 @@
 /**
  * Plugin Name:     WP Guide
  * Description:     Display additional panel in Gutenberg editor with guide
- * Version:         1.2.0
+ * Version:         1.3.0
  * Author:          Innocode
  * Author URI:      https://innocode.com
  * License:         GPLv2 or later

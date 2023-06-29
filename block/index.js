@@ -30,6 +30,7 @@ const Guide = () => (
 				getEntityRecords( 'postType', 'wp_guide', {
 					wp_guide_posts: termsIds,
 					sorted: true,
+					per_page: -1
 				} ) || []
 			);
 		} ) }
