@@ -352,7 +352,7 @@ class Plugin
 			<?php
 			$posts = get_posts( [
 				'post_type' 		=> static::POST_TYPE,
-				'posts_per_page'	=> 20,
+				'posts_per_page'	=> 100,
 				'tax_query'			=> [
 					[
 						'taxonomy'  => static::TAXONOMY,
